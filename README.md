@@ -67,7 +67,9 @@ La interfaz presenta:
 ## 4. Estructura del Proyecto
 
 El proyecto consta de un único archivo HTML que integra todos los elementos:
+
 botsito-chatbot/
+
 └── V1.2.html # Archivo principal (HTML + CSS + JS)
 
 **Organización interna:**
@@ -93,13 +95,14 @@ botsito-chatbot/
 1. **Descarga el archivo** clonando este repositorio:
 
    ```bash
-   git clone https://github.com/tu-usuario/botsito-chatbot.git
+   git clone https://github.com/David-DARC/ChatBot-V1.1
    cd botsito-chatbot
 2. Abre el archivo en tu navegador con un servidor local (no uses file://).
     ve a http://localhost:80/V1.2.html
 3. Comienza a interactuar: Escribe tus preguntas en el chat y Botsito responderá usando la inteligencia de Botpress.
 
-6. ¿Cómo Funciona? (Explicación Técnica)
+
+## 6. ¿Cómo Funciona? (Explicación Técnica)
 6.1 Integración con Botpress
 
 El chat se carga a través de un iframe que apunta al WebChat de Botpress:
@@ -135,7 +138,7 @@ El iframe se comunica directamente con el bot alojado en Botpress Cloud, el cual
 
     Colores tecnológicos: tonos azules que transmiten confianza y modernidad.
 
-7. Personalización
+## 7. Personalización
 Cambiar el nombre del asistente
 
 Modifica el <title> y el texto del hint en el HTML:
@@ -162,7 +165,7 @@ const finalSize = Math.min(size, 600); // Cambia este valor
 Actualizar la URL del WebChat
 
 Reemplaza el src del iframe con la URL de tu bot publicada en Botpress.
-8. Limitaciones y Advertencias
+## 8. Limitaciones y Advertencias
 
     Dependencia de internet: El chat y la esfera 3D se cargan desde CDN. Sin conexión, la página no funcionará completamente.
 
@@ -170,7 +173,7 @@ Reemplaza el src del iframe con la URL de tu bot publicada en Botpress.
 
     El historial no se guarda localmente: Las conversaciones se gestionan en Botpress, no en el navegador.
 
-9. Cómo Contribuir
+## 9. Cómo Contribuir
 
 Las contribuciones son bienvenidas. Si deseas mejorar este proyecto:
 
@@ -184,4 +187,5 @@ Las contribuciones son bienvenidas. Si deseas mejorar este proyecto:
 
     Abre un Pull Request.
 Si tienes preguntas o sugerencias, puedes abrir un issue en este repositorio.
-¡Gracias por usar Botsito! 🚀
+
+## ¡Gracias por usar Botsito! 🚀
