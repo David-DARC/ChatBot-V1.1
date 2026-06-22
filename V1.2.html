@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Botsito · Asistente IA</title>
+  <style>
+    :root {
+      --bg: #0d0d0d;
+      --panel: #1a1a1acc;
+      --text: #e8ecf3;
+      --muted: #7e8aa3;
+      /* AZULES TECNOLÓGICOS */
+      --primary: #0066cc;
+      --primary-dim: #003d99;
+      --primary-light: #0088ff;
+      --line: #1a3a5c;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: radial-gradient(circle at 50% 20%, #1a1a1a 0%, #0d0d0d 60%, #0d0d0d 100%);
+      color: var(--text);
+      height: 100vh;
+      display: flex;
+      overflow: hidden;
+    }
+
+    /* ===== MAIN (OCUPA TODO EL ESPACIO) ===== */
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      min-width: 0;
+    }
+
+    /* ===== ESFERA 3D===== */
+    .orb-zone {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      border-bottom: 1px solid var(--line);
+      background: radial-gradient(ellipse at 50% 30%, rgba(0, 102, 204, 0.05), transparent 70%);
+      min-height: 200px;
+      padding: 10px; /* Menos padding para que la esfera use más espacio */
+    }
+
+    .orb {
+      width: 100%;
+      max-width: 600px; /* Tamaño de 380px */
+      aspect-ratio: 1/1;
+      border-radius: 50%;
+      position: relative;
+      background:
+        radial-gradient(circle at 50% 50%, rgba(0, 102, 204, 0.85), rgba(0, 61, 153, 0.4) 55%, transparent 75%);
+      box-shadow:
+        0 0 40px rgba(0, 102, 204, 0.45),
+        0 0 90px rgba(0, 102, 204, 0.18);
+      animation: pulse 3.2s ease-in-out infinite;
+    }
+
+    .orb canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+    }
+
+    .orb::before,
+    .orb::after {
+      content: '';
+      position: absolute;
+      inset: -18px;
+      border-radius: 50%;
+      border: 1px solid rgba(0, 102, 204, 0.25);
+      animation: spin 14s linear infinite;
+      pointer-events: none;
+    }
+
+    .orb::after {
+      inset: -34px;
+      border-color: rgba(0, 102, 204, 0.12);
+      animation: spin 22s linear infinite reverse;
+      border-style: dashed;
+    }
+
+    @keyframes pulse {
+      0%,
+      100% {
+        transform: scale(1);
+        filter: brightness(1);
+      }
+      50% {
+        transform: scale(1.06);
+        filter: brightness(1.25);
+      }
+    }
+
+    @keyframes spin {
+      from {
+        transform: rotate(0deg);
+      }
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .orb-label {
+      position: absolute;
+      bottom: 18px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 12px;
+      letter-spacing: 3px;
+      color: var(--primary-dim);
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    /* ===== CHAT ===== */
+    .chat-container {
+      flex: 1;
+      overflow: hidden;
+      background: rgba(8, 12, 20, 0.3);
+      min-height: 150px;
+    }
+
+    .chat-container iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    /* ===== INPUT OCULTO ===== */
+    .input-zone {
+      display: none;
+    }
+
+    /* ===== RESPONSIVIDAD ===== */
+    @media (max-width: 768px) {
+      .orb-zone {
+        min-height: 150px;
+        padding: 10px;
+      }
+      .orb {
+        max-width: 300px; /* En móviles se reduce para no desbordar */
+      }
+      .chat-container {
+        min-height: 120px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="main">
+    <!-- ESFERA 3D (AZUL) -->
+    <div class="orb-zone">
+      <div class="orb">
+        <canvas id="orbCanvas"></canvas>
+      </div>
+      <div class="orb-label">Escuchando</div>
+    </div>
+
+    <!-- CHAT (iframe de Botpress) -->
+    <div class="chat-container">
+      <!-- Laboratorio de Botpress -->
+      <iframe
+      src="https://cdn.botpress.cloud/webchat/v3.6/shareable.html?configUrl=https://files.bpcontent.cloud/2026/06/18/18/20260618183216-7QYIWC4N.json"
+      allow="microphone; camera;"
+      ></iframe>
+    </div>
+
+    <!-- Input oculto -->
+    <div class="input-zone">
+      <div class="input-box">
+        <textarea id="userInput" rows="1" placeholder="Escribe un mensaje..."></textarea>
+        <button class="send-btn" id="sendBtn">
+          <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
+        </button>
+      </div>
+      <div class="hint">Botsito puede cometer errores. Verifica información importante.</div>
+    </div>
+  </div>
+
+  <!-- ===== SCRIPTS ===== -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js">
+  </script>
+
+  <script>
+    // ============================================================
+    //  ESFERA 3D (600px máx)
+    // ============================================================
+    const canvas = document.getElementById('orbCanvas');
+
+    function resizeCanvas() {
+      const container = canvas.parentElement;
+      const rect = container.getBoundingClientRect();
+      const size = Math.min(rect.width, rect.height) * 0.85;
+      const finalSize = Math.min(size, 600);
+      canvas.width = finalSize;
+      canvas.height = finalSize;
+      renderer.setSize(finalSize, finalSize, false);
+      camera.aspect = 1;
+      camera.updateProjectionMatrix();
+    }
+
+    const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+    renderer.setPixelRatio(window.devicePixelRatio);
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
+    camera.position.z = 9.0;
+
+    // COLOR AZUL TECNOLÓGICO
+    const MAIN_COLOR = 0x0066cc;
+
+    const nodeCount = 220;
+    const radius = 2.5; // Ligeramente más grande para que se vea más lleno
+    const positions = [];
+    const goldenAngle = Math.PI * (3 - Math.sqrt(5));
+    for (let i = 0; i < nodeCount; i++) {
+      const y = 1 - (i / (nodeCount - 1)) * 2;
+      const r = Math.sqrt(1 - y * y);
+      const theta = goldenAngle * i;
+      const x = Math.cos(theta) * r;
+      const z = Math.sin(theta) * r;
+      positions.push(new THREE.Vector3(x, y, z).multiplyScalar(radius));
+    }
+
+    // Puntos (nodos) - azul claro
+    const pointsGeo = new THREE.BufferGeometry();
+    const posArray = new Float32Array(nodeCount * 3);
+    positions.forEach((p, i) => {
+      posArray[i * 3] = p.x;
+      posArray[i * 3 + 1] = p.y;
+      posArray[i * 3 + 2] = p.z;
+    });
+    pointsGeo.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+    const pointsMat = new THREE.PointsMaterial({
+      color: 0x88ccff,
+      size: 0.09, // un poco más grande para que se vean bien
+      transparent: true,
+      opacity: 0.95,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false
+    });
+    const pointCloud = new THREE.Points(pointsGeo, pointsMat);
+    scene.add(pointCloud);
+
+    // Conexiones (red neuronal) - AZUL
+    const lineVerts = [];
+    const connectionThreshold = 0.7; // Aumentado para más conexiones
+    for (let i = 0; i < nodeCount; i++) {
+      for (let j = i + 1; j < nodeCount; j++) {
+        const d = positions[i].distanceTo(positions[j]);
+        if (d < connectionThreshold) {
+          lineVerts.push(positions[i].x, positions[i].y, positions[i].z);
+          lineVerts.push(positions[j].x, positions[j].y, positions[j].z);
+        }
+      }
+    }
+    const lineGeo = new THREE.BufferGeometry();
+    lineGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(lineVerts), 3));
+    const lineMat = new THREE.LineBasicMaterial({
+      color: MAIN_COLOR,
+      transparent: true,
+      opacity: 0.25,
+      blending: THREE.AdditiveBlending
+    });
+    const lines = new THREE.LineSegments(lineGeo, lineMat);
+    scene.add(lines);
+
+    // Núcleo interior - AZUL
+    const coreGeo = new THREE.SphereGeometry(0.8, 24, 24);
+    const coreMat = new THREE.MeshBasicMaterial({
+      color: MAIN_COLOR,
+      transparent: true,
+      opacity: 0.25,
+      blending: THREE.AdditiveBlending
+    });
+    const core = new THREE.Mesh(coreGeo, coreMat);
+    scene.add(core);
+
+    // Esfera interior de alambre - AZUL
+    const wireGeo = new THREE.SphereGeometry(1.3, 16, 16);
+    const wireMat = new THREE.MeshBasicMaterial({
+      color: MAIN_COLOR,
+      wireframe: true,
+      transparent: true,
+      opacity: 0.15
+    });
+    const wireSphere = new THREE.Mesh(wireGeo, wireMat);
+    scene.add(wireSphere);
+
+    function animate() {
+      requestAnimationFrame(animate);
+      pointCloud.rotation.y += 0.0025;
+      pointCloud.rotation.x += 0.0008;
+      lines.rotation.copy(pointCloud.rotation);
+      wireSphere.rotation.y -= 0.0015;
+      wireSphere.rotation.x -= 0.0005;
+      const t = Date.now() * 0.001;
+      core.scale.setScalar(1 + Math.sin(t * 1.5) * 0.08);
+      renderer.render(scene, camera);
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+    animate();
+
+    const observer = new ResizeObserver(() => resizeCanvas());
+    observer.observe(canvas.parentElement);
+  </script>
+
+</body>
+</html>
