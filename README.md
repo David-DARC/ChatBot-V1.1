@@ -30,6 +30,9 @@
 - 📚 Guías de estudio disponibles
 - 📞 Contacto y soporte
 
+video introductorio sobre el uso de botsito:
+https://youtu.be/FBN_SezIuLs?feature=shared
+
 La interfaz presenta:
 - Una **esfera 3D animada** (red neuronal holográfica) que refuerza la estética de IA.
 - Un **chat embebido** de Botpress con diseño personalizado.
